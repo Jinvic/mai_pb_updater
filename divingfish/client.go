@@ -55,7 +55,7 @@ func (c *Client) GetMaiMaiMusicData(ctx context.Context) ([]MaiMaiMusicData, err
 
 	c.Etag = resp.Header.Get("etag")
 	go func() {
-		if err := c.presistEtag(); err != nil {
+		if err := c.persistEtag(); err != nil {
 			log.Printf("failed to persist etag: %v", err)
 		}
 	}()
@@ -71,6 +71,6 @@ func (c *Client) GetMaiMaiMusicData(ctx context.Context) ([]MaiMaiMusicData, err
 	return musicDataList, nil
 }
 
-func (c *Client) presistEtag() error {
+func (c *Client) persistEtag() error {
 	return config.WriteConfig("divingfish.etag", c.Etag)
 }
