@@ -7,3 +7,4 @@ pocketbase:
     collection_name: maimai_music_data
     identity: example@example.com
     password: example
+    max_batch_size: 50

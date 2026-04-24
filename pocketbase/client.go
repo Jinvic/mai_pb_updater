@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -16,13 +17,15 @@ type Client struct {
 	Token          string
 	BaseURL        string
 	CollectionName string
+	MaxBatchSize   int
 	HTTPClient     *http.Client
 }
 
-func NewClient(baseURL string, collectionName string) *Client {
+func NewClient(baseURL string, collectionName string, maxBatchSize int) *Client {
 	return &Client{
 		BaseURL:        baseURL,
 		CollectionName: collectionName,
+		MaxBatchSize:   maxBatchSize,
 		HTTPClient:     &http.Client{},
 	}
 }
@@ -136,12 +139,9 @@ func (c *Client) getMusicData(ctx context.Context, page int, perPage int, skipTo
 }
 
 func (c *Client) BatchUpsertMusicData(ctx context.Context, musicDataListToCreate []MaiMaiMusicData, musicDataListToUpdate []MaiMaiMusicData) error {
-	requestURL := fmt.Sprintf("%s/api/batch", c.BaseURL)
 	endpoint := fmt.Sprintf("/api/collections/%s/records", c.CollectionName)
 
-	batchRequest := BatchRequest{
-		Requests: []BatchRequestItem{},
-	}
+	requestItems := []BatchRequestItem{}
 	for _, musicData := range musicDataListToCreate {
 		musicDataToCreate := musicData.ToCreate()
 		jsonBody, err := json.Marshal(musicDataToCreate)
@@ -153,7 +153,7 @@ func (c *Client) BatchUpsertMusicData(ctx context.Context, musicDataListToCreate
 			Url:    endpoint,
 			Body:   jsonBody,
 		}
-		batchRequest.Requests = append(batchRequest.Requests, request)
+		requestItems = append(requestItems, request)
 	}
 	for _, musicData := range musicDataListToUpdate {
 		musicDataToUpdate := musicData.ToUpdate()
@@ -166,9 +166,32 @@ func (c *Client) BatchUpsertMusicData(ctx context.Context, musicDataListToCreate
 			Url:    fmt.Sprintf("%s/%s", endpoint, musicData.ID),
 			Body:   jsonBody,
 		}
-		batchRequest.Requests = append(batchRequest.Requests, request)
+		requestItems = append(requestItems, request)
 	}
 
+	if len(requestItems) == 0 {
+		return nil
+	}
+
+	for i := 0; i < len(requestItems); i += c.MaxBatchSize {
+		end := i + c.MaxBatchSize
+		if end > len(requestItems) {
+			end = len(requestItems)
+		}
+		err := c.upsertMusicData(ctx, requestItems[i:end])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *Client) upsertMusicData(ctx context.Context, items []BatchRequestItem) error {
+	requestURL := fmt.Sprintf("%s/api/batch", c.BaseURL)
+
+	batchRequest := BatchRequest{
+		Requests: items,
+	}
 	jsonBody, err := json.Marshal(batchRequest)
 	if err != nil {
 		return err
@@ -186,7 +209,14 @@ func (c *Client) BatchUpsertMusicData(ctx context.Context, musicDataListToCreate
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("status code: %d", resp.StatusCode)
+		errmsg := fmt.Sprintf("status code: %d", resp.StatusCode)
+		if resp.Body != nil {
+			body, _ := io.ReadAll(resp.Body)
+			if len(body) > 0 {
+				errmsg += fmt.Sprintf(", body: %s", string(body))
+			}
+		}
+		return errors.New(errmsg)
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -199,7 +229,7 @@ func (c *Client) BatchUpsertMusicData(ctx context.Context, musicDataListToCreate
 		return err
 	}
 
-	for _, response := range batchResponse.Responses {
+	for _, response := range batchResponse {
 		if response.Status != http.StatusOK {
 			log.Printf("failed to upsert music data: %d, Title: %s, ID: %s\n", response.Status, response.Body.Title, response.Body.ID)
 		}

@@ -12,6 +12,7 @@ func InitConfig(configPath string) (*Config, error) {
 
 	viper.SetDefault("divingfish.base_url", "https://www.diving-fish.com/api/maimaidxprober")
 	viper.SetDefault("divingfish.etag", "")
+	viper.SetDefault("pocketbase.max_batch_size", 50)
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err

@@ -15,4 +15,5 @@ type PocketbaseConfig struct {
 	CollectionName string `mapstructure:"collection_name"`
 	Identity       string `mapstructure:"identity"`
 	Password       string `mapstructure:"password"`
+	MaxBatchSize   int    `mapstructure:"max_batch_size"`
 }

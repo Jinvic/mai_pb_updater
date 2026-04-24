@@ -12,7 +12,7 @@ func TestGetAllMusicData(t *testing.T) {
 		t.Fatalf("failed to init config: %v", err)
 	}
 
-	client := NewClient(cfg.Pocketbase.BaseURL, cfg.Pocketbase.CollectionName)
+	client := NewClient(cfg.Pocketbase.BaseURL, cfg.Pocketbase.CollectionName, cfg.Pocketbase.MaxBatchSize)
 	ctx := context.Background()
 	err = client.Login(ctx, cfg.Pocketbase.Identity, cfg.Pocketbase.Password)
 	if err != nil {
@@ -31,7 +31,7 @@ func TestBatchUpsertMusicData(t *testing.T) {
 		t.Fatalf("failed to init config: %v", err)
 	}
 
-	client := NewClient(cfg.Pocketbase.BaseURL, cfg.Pocketbase.CollectionName)
+	client := NewClient(cfg.Pocketbase.BaseURL, cfg.Pocketbase.CollectionName, cfg.Pocketbase.MaxBatchSize)
 	ctx := context.Background()
 	err = client.Login(ctx, cfg.Pocketbase.Identity, cfg.Pocketbase.Password)
 	if err != nil {

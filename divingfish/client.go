@@ -47,8 +47,8 @@ func (c *Client) GetMaiMaiMusicData(ctx context.Context) ([]MaiMaiMusicData, err
 
 	if resp.StatusCode != http.StatusOK {
 		if resp.StatusCode == http.StatusNotModified {
-			log.Printf("not modified")
-			return nil, nil
+			// 没有修改，返回空列表
+			return []MaiMaiMusicData{}, nil
 		}
 		return nil, fmt.Errorf("status code: %d", resp.StatusCode)
 	}

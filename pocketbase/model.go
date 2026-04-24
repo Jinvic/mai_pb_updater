@@ -76,9 +76,7 @@ type BatchRequestItem struct {
 	Body   json.RawMessage `json:"body"`
 }
 
-type BatchResponse struct {
-	Responses []BatchResponseItem `json:"responses"`
-}
+type BatchResponse []BatchResponseItem
 
 type BatchResponseItem struct {
 	Status int             `json:"status"`
