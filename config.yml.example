@@ -1,0 +1,9 @@
+divingfish:
+    base_url: https://www.diving-fish.com/api/maimaidxprober
+    etag: ""
+
+pocketbase:
+    base_url: https://pb.example.com
+    collection_name: maimai_music_data
+    identity: example@example.com
+    password: example
