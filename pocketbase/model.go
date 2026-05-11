@@ -6,35 +6,35 @@ import (
 )
 
 type MaiMaiMusicData struct {
-	ID     string    `json:"id"`
-	Title  string    `json:"title"`
-	Type   string    `json:"type"`
-	DS     []float64 `json:"ds"`
-	Level  []string  `json:"level"`
-	Cids   []int     `json:"cids"`
-	Artist string    `json:"artist"`
-	Genre  string    `json:"genre"`
-	BPM    int       `json:"bpm"`
-	From   string    `json:"from"`
-	IsNew  bool      `json:"is_new"`
+	ID     string `json:"id"`
+	Title  string `json:"title"`
+	Type   string `json:"type"`
+	DS     DS     `json:"ds"`
+	Level  Level  `json:"level"`
+	Cids   Cids   `json:"cids"`
+	Artist string `json:"artist"`
+	Genre  string `json:"genre"`
+	BPM    int    `json:"bpm"`
+	From   string `json:"from"`
+	IsNew  bool   `json:"is_new"`
 }
 
 type MaiMaiMusicDataToCreate MaiMaiMusicData
 
 // 只更新部分字段
 type MaiMaiMusicDataToUpdate struct {
-	DS    []float64 `json:"ds"`
-	Level []string  `json:"level"`
-	IsNew bool      `json:"is_new"`
+	DS    DS    `json:"ds"`
+	Level Level `json:"level"`
+	IsNew bool  `json:"is_new"`
 }
 
 func (m *MaiMaiMusicData) FromDivingFish(musicData divingfish.MaiMaiMusicData) {
 	m.ID = musicData.ID
 	m.Title = musicData.Title
 	m.Type = musicData.Type
-	m.DS = musicData.DS
-	m.Level = musicData.Level
-	m.Cids = musicData.Cids
+	m.DS = mapByDifficulty(musicData.DS, musicData.BasicInfo.Genre)
+	m.Level = mapByDifficulty(musicData.Level, musicData.BasicInfo.Genre)
+	m.Cids = mapByDifficulty(musicData.Cids, musicData.BasicInfo.Genre)
 	m.Artist = musicData.BasicInfo.Artist
 	m.Genre = musicData.BasicInfo.Genre
 	m.BPM = musicData.BasicInfo.BPM
