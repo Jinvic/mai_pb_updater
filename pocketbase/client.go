@@ -162,7 +162,7 @@ func (c *Client) BatchUpsertMusicData(ctx context.Context, musicDataListToCreate
 			return err
 		}
 		request := BatchRequestItem{
-			Method: "PUT",
+			Method: "PATCH",
 			Url:    fmt.Sprintf("%s/%s", endpoint, musicData.ID),
 			Body:   jsonBody,
 		}
