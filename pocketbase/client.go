@@ -85,7 +85,7 @@ func (c *Client) GetAllMusicData(ctx context.Context) ([]MaiMaiMusicData, error)
 	page++
 	skipTotal = true
 	for page <= totalPages {
-		musicData, totalPages, err = c.getMusicData(ctx, page, perPage, skipTotal)
+		musicData, _, err = c.getMusicData(ctx, page, perPage, skipTotal)
 		if err != nil {
 			return nil, err
 		}
